@@ -692,39 +692,6 @@
                 y: -100,
                 width: 120,
                 height: 120,
-                speed: 0.5,
-                health: 50 + level * 20, // Boss gets stronger with levels
-                maxHealth: 50 + level * 20,
-                shootTimer: 0,
-                moveDirection: 1,
-                moveTimer: 0,
-                phase: 1, // Boss phases
-                color: '#ff0066'
-            };
-            
-            // Show boss warning
-            const container = document.getElementById('powerupContainer');
-            const bossBadge = document.createElement('div');
-            bossBadge.className = 'powerup-badge';
-            bossBadge.style.borderColor = '#ff0066';
-            bossBadge.style.color = '#ff0066';
-            bossBadge.style.fontSize = '20px';
-            bossBadge.style.animation = 'pulse 0.5s infinite';
-            bossBadge.textContent = '⚠️ تحذير! البوس قادم! ⚠️';
-            container.appendChild(bossBadge);
-            
-            setTimeout(() => {
-                bossBadge.remove();
-            }, 3000);
-        }
-        
-        function spawnBoss() {
-            bossActive = true;
-            boss = {
-                x: canvas.width / 2,
-                y: -100,
-                width: 120,
-                height: 120,
                 speed: 1,
                 targetY: canvas.height * 0.25, // Stop at 25% from top
                 health: 30, // Reduced health so it drops 4 powerups max
@@ -753,6 +720,7 @@
                 bossBadge.remove();
             }, 3000);
         }
+        
         
         function updateBoss() {
             if (!boss) return;
@@ -1039,231 +1007,9 @@
             enemies.push(enemy);
         }
         
-        function spawnBoss() {
-            bossActive = true;
-            const bossLevel = Math.floor(level / 3);
-            
-            boss = {
-                x: canvas.width / 2,
-                y: -100,
-                width: 100,
-                height: 100,
-                speed: 0.5,
-                health: 50 + bossLevel * 30, // Boss gets stronger
-                maxHealth: 50 + bossLevel * 30,
-                color: '#ff0066',
-                phase: 1,
-                moveDirection: 1,
-                shootTimer: 0,
-                shootPattern: 0,
-                entering: true
-            };
-            
-            // Show boss warning
-            const container = document.getElementById('powerupContainer');
-            const bossBadge = document.createElement('div');
-            bossBadge.className = 'powerup-badge';
-            bossBadge.style.borderColor = '#ff0066';
-            bossBadge.style.color = '#ff0066';
-            bossBadge.style.fontSize = '20px';
-            bossBadge.style.animation = 'pulse 1s infinite';
-            bossBadge.textContent = '⚠️ تحذير: البوس قادم! ⚠️';
-            container.appendChild(bossBadge);
-            
-            setTimeout(() => {
-                bossBadge.remove();
-            }, 3000);
-        }
         
-        function updateBoss() {
-            if (!boss) return;
-            
-            // Boss entrance
-            if (boss.entering) {
-                boss.y += boss.speed;
-                if (boss.y >= 100) {
-                    boss.entering = false;
-                }
-                return;
-            }
-            
-            // Boss movement pattern (side to side)
-            boss.x += boss.speed * 2 * boss.moveDirection;
-            if (boss.x <= boss.width || boss.x >= canvas.width - boss.width) {
-                boss.moveDirection *= -1;
-            }
-            
-            // Boss shooting patterns
-            boss.shootTimer++;
-            
-            if (boss.shootTimer > 40) {
-                boss.shootTimer = 0;
-                boss.shootPattern++;
-                
-                // Different attack patterns
-                if (boss.shootPattern % 3 === 0) {
-                    // Spread shot
-                    for (let i = -2; i <= 2; i++) {
-                        bullets.push({
-                            x: boss.x + i * 20,
-                            y: boss.y + boss.height / 2,
-                            width: 6,
-                            height: 12,
-                            speed: -4,
-                            color: '#ff0066',
-                            enemy: true
-                        });
-                    }
-                } else if (boss.shootPattern % 3 === 1) {
-                    // Aimed shot at player
-                    const angle = Math.atan2(player.y - boss.y, player.x - boss.x);
-                    bullets.push({
-                        x: boss.x,
-                        y: boss.y + boss.height / 2,
-                        width: 8,
-                        height: 8,
-                        dx: Math.cos(angle) * 5,
-                        dy: Math.sin(angle) * 5,
-                        color: '#ffff00',
-                        enemy: true,
-                        homing: true
-                    });
-                } else {
-                    // Triple shot forward
-                    bullets.push({
-                        x: boss.x - 30,
-                        y: boss.y + boss.height / 2,
-                        width: 6,
-                        height: 12,
-                        speed: -5,
-                        color: '#ff0066',
-                        enemy: true
-                    });
-                    bullets.push({
-                        x: boss.x,
-                        y: boss.y + boss.height / 2,
-                        width: 6,
-                        height: 12,
-                        speed: -5,
-                        color: '#ff0066',
-                        enemy: true
-                    });
-                    bullets.push({
-                        x: boss.x + 30,
-                        y: boss.y + boss.height / 2,
-                        width: 6,
-                        height: 12,
-                        speed: -5,
-                        color: '#ff0066',
-                        enemy: true
-                    });
-                }
-            }
-            
-            // Boss phases based on health
-            const healthPercent = boss.health / boss.maxHealth;
-            if (healthPercent < 0.3) {
-                boss.phase = 3;
-                boss.speed = 0.8;
-            } else if (healthPercent < 0.6) {
-                boss.phase = 2;
-                boss.speed = 0.65;
-            }
-        }
         
-        function drawBoss() {
-            if (!boss) return;
-            
-            ctx.save();
-            ctx.translate(boss.x, boss.y);
-            
-            // Boss body (large intimidating ship)
-            ctx.fillStyle = boss.color;
-            ctx.shadowBlur = 25;
-            ctx.shadowColor = boss.color;
-            
-            // Main body
-            ctx.beginPath();
-            ctx.moveTo(0, boss.height / 2);
-            ctx.lineTo(-boss.width / 2, -boss.height / 3);
-            ctx.lineTo(-boss.width / 3, -boss.height / 2);
-            ctx.lineTo(boss.width / 3, -boss.height / 2);
-            ctx.lineTo(boss.width / 2, -boss.height / 3);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Large wings
-            ctx.globalAlpha = 0.8;
-            ctx.beginPath();
-            ctx.moveTo(-boss.width / 2, -boss.height / 3);
-            ctx.lineTo(-boss.width * 0.9, boss.height / 4);
-            ctx.lineTo(-boss.width / 2, boss.height / 3);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(boss.width / 2, -boss.height / 3);
-            ctx.lineTo(boss.width * 0.9, boss.height / 4);
-            ctx.lineTo(boss.width / 2, boss.height / 3);
-            ctx.closePath();
-            ctx.fill();
-            ctx.globalAlpha = 1;
-            
-            // Boss core (weak point)
-            ctx.fillStyle = '#ffff00';
-            ctx.beginPath();
-            ctx.arc(0, 0, boss.width / 5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Pulsing effect based on phase
-            ctx.fillStyle = `rgba(255, 0, 102, ${0.3 + Math.sin(Date.now() / 200) * 0.2})`;
-            ctx.beginPath();
-            ctx.arc(0, 0, boss.width / 3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Engine glows
-            for (let i = -1; i <= 1; i++) {
-                ctx.fillStyle = boss.color;
-                ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 100) * 0.4;
-                ctx.beginPath();
-                ctx.arc(i * boss.width / 4, boss.height / 2, boss.width / 8, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-            
-            ctx.restore();
-            
-            // Boss health bar
-            const barWidth = 200;
-            const barHeight = 20;
-            const barX = canvas.width / 2 - barWidth / 2;
-            const barY = 20;
-            
-            // Background
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
-            
-            // Health bar
-            ctx.fillStyle = '#333';
-            ctx.fillRect(barX, barY, barWidth, barHeight);
-            
-            const healthPercent = boss.health / boss.maxHealth;
-            let healthColor = '#00ff00';
-            if (healthPercent < 0.3) healthColor = '#ff0000';
-            else if (healthPercent < 0.6) healthColor = '#ffff00';
-            
-            ctx.fillStyle = healthColor;
-            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
-            
-            // Boss name
-            ctx.fillStyle = '#ff0066';
-            ctx.font = 'bold 16px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('👑 البوس 👑', canvas.width / 2, barY - 10);
-            ctx.textAlign = 'left';
-            
-            ctx.shadowBlur = 0;
-        }
+        function spawnPowerup(x, y) {
             if (Math.random() < 0.3) {
                 const types = ['rapidfire', 'shield', 'health', 'energy'];
                 powerups.push({
@@ -1273,7 +1019,7 @@
                     height: 20,
                     speed: 2,
                     type: types[Math.floor(Math.random() * types.length)],
-                    lifetime: 300, // 5 seconds at 60fps
+                    lifetime: 300,
                     maxLifetime: 300
                 });
             }
