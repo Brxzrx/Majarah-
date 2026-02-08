@@ -53,12 +53,12 @@
         
         #ui {
             position: absolute;
-            top: 10px;
+            top: 50px;
             left: 10px;
             right: 10px;
             color: white;
-            font-size: 14px;
-            display: flex;
+            font-size: 13px;
+            display: none; /* Hidden initially */
             justify-content: space-between;
             text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
             pointer-events: none;
@@ -68,7 +68,7 @@
         @media (min-width: 600px) {
             #ui {
                 font-size: 18px;
-                top: 30px;
+                top: 70px;
                 left: 30px;
                 right: 30px;
             }
@@ -144,7 +144,7 @@
         .pause-btn {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px; /* Changed from left to right */
             background: rgba(255, 0, 102, 0.3);
             border: 2px solid rgba(255, 0, 102, 0.7);
             color: #ff0066;
@@ -153,12 +153,13 @@
             font-size: 16px;
             cursor: pointer;
             z-index: 10;
+            display: none; /* Hidden initially */
         }
         
         @media (min-width: 600px) {
             .pause-btn {
                 top: 30px;
-                left: 30px;
+                right: 30px; /* Changed from left to right */
                 padding: 10px 20px;
                 font-size: 18px;
             }
@@ -235,15 +236,82 @@
         
         .powerup-indicators-container {
             position: absolute;
-            top: 80px;
+            top: 120px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
+            display: none; /* Hidden initially */
             gap: 10px;
             z-index: 10;
             flex-wrap: wrap;
             justify-content: center;
             max-width: 90%;
+        }
+        
+        /* Stored powerups container */
+        .stored-powerups-container {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none; /* Hidden initially */
+            flex-direction: row;
+            gap: 10px;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stored-powerup-badge {
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffff00;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+            pointer-events: auto;
+        }
+        
+        .stored-powerup-badge:active {
+            transform: scale(0.9);
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        .activate-all-btn {
+            background: linear-gradient(135deg, #ff0066, #9900ff);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 0 15px rgba(255, 0, 102, 0.5);
+            transition: all 0.2s;
+            pointer-events: auto;
+            display: none; /* Hidden initially - shown when game starts */
+        }
+        
+        .activate-all-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 25px rgba(255, 0, 102, 0.8);
+        }
+        
+        @media (min-width: 600px) {
+            .stored-powerup-badge {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+            
+            .activate-all-btn {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
         }
         
         .powerup-badge {
@@ -264,7 +332,7 @@
             }
             
             .powerup-indicators-container {
-                top: 100px;
+                top: 140px;
             }
             
             .powerup-badge {
@@ -299,7 +367,7 @@
             bottom: 20px;
             left: 0;
             right: 0;
-            display: flex;
+            display: none; /* Hidden initially */
             justify-content: space-between;
             padding: 0 15px;
             z-index: 10;
@@ -370,6 +438,7 @@
         <div id="ui">
             <div>
                 <div>النقاط: <span id="score">0</span></div>
+                <div>💰 <span id="coins">0</span></div>
                 <div>المستوى: <span id="level">1</span></div>
             </div>
             <div style="text-align: left;">
@@ -379,23 +448,27 @@
         </div>
         <button class="pause-btn" id="pauseBtn">⏸ إيقاف</button>
         
+        <!-- Stored powerups (collected but not activated) -->
+        <div class="stored-powerups-container" id="storedPowerupsContainer"></div>
+        
         <div class="powerup-indicator" id="powerupIndicator"></div>
         <div class="powerup-indicators-container" id="powerupContainer"></div>
         <div id="instructions">
-            ← → التحرك<br>
-            مسافة للإطلاق<br>
+            WASD أو الأسهم للتحكم<br>
+            إطلاق تلقائي<br>
             Shift للقوة الخاصة
         </div>
         
         <!-- Mobile Controls -->
         <div class="mobile-controls">
             <div class="control-group">
-                <div class="control-btn" id="rightBtn">→</div>
-                <div class="control-btn" id="leftBtn">←</div>
+                <button class="activate-all-btn" id="activateAllBtn">🎁 تفعيل الكل</button>
+                <button class="activate-all-btn" id="autoToggleBtn" style="background: linear-gradient(135deg, #00cc00, #006600);">
+                    🔄 يدوي
+                </button>
             </div>
             <div class="control-group">
                 <div class="control-btn special-btn" id="specialBtn">⚡</div>
-                <div class="control-btn" id="shootBtn">🔥</div>
             </div>
         </div>
         
@@ -411,6 +484,15 @@
             <p style="color: #ffff00;">+ <span id="bonusPoints">500</span> نقطة إضافية!</p>
             <p style="color: #00ff00;">+ صحة كاملة!</p>
             <button id="continueBtn" class="control-btn" style="width: auto; padding: 12px 35px; margin-top: 15px;">متابعة</button>
+        </div>
+        
+        <!-- Boss Rewards Screen -->
+        <div id="bossRewardsScreen" style="display: none;">
+            <h2>🏆 هزمت البوس! 🏆</h2>
+            <p style="color: #ffff00; font-size: 20px;">اختر مكافأتك:</p>
+            <div id="rewardOptions" style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+                <!-- Will be filled dynamically -->
+            </div>
         </div>
         
         <div id="gameOver">
@@ -442,6 +524,7 @@
         let bossActive = false;
         let boss = null;
         let score = 0;
+        let coins = 0; // New currency system
         let level = 1;
         let health = 100;
         let energy = 100;
@@ -449,14 +532,25 @@
         let enemyKills = 0; // Track enemy kills for level progression
         let livesRemaining = 3; // Lives system
         
+        // Stored powerups system (collected but not activated)
+        let storedPowerups = [];
+        let maxStoredPowerups = 4;
+        let autoActivatePowerups = false; // Toggle for auto-activate
+        let powerupCounts = {}; // Track stacked powerups
+        
+        // Currency and shop system
+        let allies = []; // Additional player characters
+        let maxAllies = 4; // Maximum 4 allies
+        
         // Player
         const player = {
             x: canvas.width / 2,
             y: canvas.height - 80,
             width: 40,
             height: 40,
-            speed: 6, // Increased from 3 to 6 for better control
+            speed: 8, // Increased speed for smoother control
             dx: 0,
+            dy: 0, // For vertical movement
             color: '#00ffff',
             trail: []
         };
@@ -474,13 +568,22 @@
         let shield = false;
         let shieldTimer = 0;
         
+        // Powerup inventory - collected but not activated
+        let powerupInventory = {
+            rapidfire: 0,
+            shield: 0,
+            health: 0,
+            energy: 0
+        };
+        
         // Input
         const keys = {};
         
         // Mobile controls state
-        let moveLeft = false;
-        let moveRight = false;
-        let shooting = false;
+        let shooting = true; // Always shooting automatically
+        let touchActive = false;
+        let touchX = 0;
+        let touchY = 0; // Track both X and Y for full movement
         
         // Initialize stars
         for (let i = 0; i < 100; i++) {
@@ -493,60 +596,37 @@
         }
         
         // Mobile button handlers
-        const leftBtn = document.getElementById('leftBtn');
-        const rightBtn = document.getElementById('rightBtn');
-        const shootBtn = document.getElementById('shootBtn');
         const specialBtn = document.getElementById('specialBtn');
+        
+        // Canvas touch controls - move player in all directions with finger
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            touchActive = true;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            touchX = touch.clientX - rect.left;
+            touchY = touch.clientY - rect.top;
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (touchActive) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                touchX = touch.clientX - rect.left;
+                touchY = touch.clientY - rect.top;
+            }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            touchActive = false;
+        }, { passive: false });
         
         // Prevent scrolling on touch
         document.body.addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
-        
-        leftBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            moveLeft = true; // Left button moves left
-        }, { passive: false });
-        leftBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            moveLeft = false;
-        }, { passive: false });
-        leftBtn.addEventListener('touchcancel', (e) => {
-            moveLeft = false;
-        });
-        
-        rightBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            moveRight = true; // Right button moves right
-        }, { passive: false });
-        rightBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            moveRight = false;
-        }, { passive: false });
-        rightBtn.addEventListener('touchcancel', (e) => {
-            moveRight = false;
-        });
-        
-        shootBtn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            shooting = true;
-            startShooting();
-        }, { passive: false });
-        shootBtn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            shooting = false;
-            stopShooting();
-        }, { passive: false });
-        shootBtn.addEventListener('touchcancel', (e) => {
-            shooting = false;
-            stopShooting();
-        });
         
         specialBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -584,10 +664,31 @@
         document.getElementById('startBtn').addEventListener('click', startGame);
         document.getElementById('pauseBtn').addEventListener('click', togglePause);
         document.getElementById('continueBtn').addEventListener('click', continueAfterBonus);
+        document.getElementById('activateAllBtn').addEventListener('click', useAllPowerups);
+        document.getElementById('autoToggleBtn').addEventListener('click', () => {
+            autoActivatePowerups = !autoActivatePowerups;
+            const btn = document.getElementById('autoToggleBtn');
+            if (autoActivatePowerups) {
+                btn.textContent = '⚡ تلقائي';
+                btn.style.background = 'linear-gradient(135deg, #ffaa00, #ff6600)';
+            } else {
+                btn.textContent = '🔄 يدوي';
+                btn.style.background = 'linear-gradient(135deg, #00cc00, #006600)';
+            }
+        });
         
         function startGame() {
             document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('ui').style.display = 'flex';
+            document.getElementById('pauseBtn').style.display = 'block';
+            document.getElementById('activateAllBtn').style.display = 'block';
+            document.getElementById('autoToggleBtn').style.display = 'block';
+            document.querySelector('.mobile-controls').style.display = 'flex';
+            document.querySelector('.stored-powerups-container').style.display = 'flex';
+            document.querySelector('.powerup-indicators-container').style.display = 'flex';
             gameRunning = true;
+            shooting = true;
+            startShooting(); // Start automatic shooting
             gameLoop();
         }
         
@@ -731,24 +832,47 @@
                     boss.y += boss.speed;
                 } else {
                     boss.entering = false;
+                    boss.directionTimer = 0;
+                    boss.currentDirection = { x: 1, y: 0.5 }; // Start moving diagonally
                 }
             } else {
-                // Move side to side
-                boss.moveTimer++;
-                if (boss.moveTimer > 100) {
-                    boss.moveDirection *= -1;
-                    boss.moveTimer = 0;
+                // Move in all directions (diagonal pattern)
+                boss.directionTimer++;
+                
+                // Change direction every 60 frames
+                if (boss.directionTimer > 60) {
+                    const directions = [
+                        { x: 1, y: 0.5 },   // Right-down
+                        { x: -1, y: 0.5 },  // Left-down
+                        { x: 1, y: -0.5 },  // Right-up
+                        { x: -1, y: -0.5 }, // Left-up
+                        { x: 1, y: 0 },     // Right
+                        { x: -1, y: 0 },    // Left
+                    ];
+                    boss.currentDirection = directions[Math.floor(Math.random() * directions.length)];
+                    boss.directionTimer = 0;
                 }
-                boss.x += boss.moveDirection * 2.5;
+                
+                boss.x += boss.currentDirection.x * 2.5;
+                boss.y += boss.currentDirection.y * 1.5;
                 
                 // Keep boss in bounds
-                if (boss.x < boss.width / 2 + 20) {
-                    boss.x = boss.width / 2 + 20;
-                    boss.moveDirection *= -1;
+                const margin = 20;
+                if (boss.x < boss.width / 2 + margin) {
+                    boss.x = boss.width / 2 + margin;
+                    boss.currentDirection.x *= -1; // Bounce
                 }
-                if (boss.x > canvas.width - boss.width / 2 - 20) {
-                    boss.x = canvas.width - boss.width / 2 - 20;
-                    boss.moveDirection *= -1;
+                if (boss.x > canvas.width - boss.width / 2 - margin) {
+                    boss.x = canvas.width - boss.width / 2 - margin;
+                    boss.currentDirection.x *= -1; // Bounce
+                }
+                if (boss.y < boss.targetY - 30) {
+                    boss.y = boss.targetY - 30;
+                    boss.currentDirection.y *= -1; // Bounce
+                }
+                if (boss.y > boss.targetY + 80) {
+                    boss.y = boss.targetY + 80;
+                    boss.currentDirection.y *= -1; // Bounce
                 }
             }
             
@@ -873,89 +997,6 @@
             ctx.shadowBlur = 0;
         }
         
-        function checkBossCollision() {
-            if (!boss) return;
-            
-            // Player bullets vs boss
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                const bullet = bullets[i];
-                if (bullet.enemy) continue;
-                
-                if (bullet.x > boss.x - boss.width / 2 &&
-                    bullet.x < boss.x + boss.width / 2 &&
-                    bullet.y > boss.y - boss.height / 2 &&
-                    bullet.y < boss.y + boss.height / 2) {
-                    
-                    boss.health -= 1;
-                    bullets.splice(i, 1);
-                    
-                    // Hit particles
-                    for (let j = 0; j < 20; j++) {
-                        particles.push({
-                            x: bullet.x,
-                            y: bullet.y,
-                            dx: (Math.random() - 0.5) * 10,
-                            dy: (Math.random() - 0.5) * 10,
-                            size: Math.random() * 4 + 2,
-                            color: boss.phase === 2 ? '#ff00ff' : '#ff0066',
-                            life: 30
-                        });
-                    }
-                    
-                    // Check if boss defeated
-                    if (boss.health <= 0) {
-                        score += 1000; // Big bonus for defeating boss
-                        
-                        // Massive explosion
-                        for (let j = 0; j < 80; j++) {
-                            const angle = (Math.PI * 2 * j) / 80;
-                            const speed = Math.random() * 8 + 4;
-                            particles.push({
-                                x: boss.x,
-                                y: boss.y,
-                                dx: Math.cos(angle) * speed,
-                                dy: Math.sin(angle) * speed,
-                                size: Math.random() * 6 + 3,
-                                color: j % 3 === 0 ? '#ff0066' : j % 3 === 1 ? '#ff00ff' : '#ffff00',
-                                life: 50
-                            });
-                        }
-                        
-                        boss = null;
-                        bossActive = false;
-                        
-                        // Show victory message
-                        const container = document.getElementById('powerupContainer');
-                        const victoryBadge = document.createElement('div');
-                        victoryBadge.className = 'powerup-badge';
-                        victoryBadge.style.borderColor = '#ffff00';
-                        victoryBadge.style.color = '#ffff00';
-                        victoryBadge.style.fontSize = '18px';
-                        victoryBadge.textContent = '🎉 هزمت البوس! +1000 نقطة!';
-                        container.appendChild(victoryBadge);
-                        
-                        setTimeout(() => {
-                            victoryBadge.remove();
-                        }, 4000);
-                        
-                        // Full restore
-                        health = 100;
-                        energy = 100;
-                    }
-                }
-            }
-            
-            // Boss collision with player
-            if (boss.y + boss.height / 2 > player.y - player.height / 2 &&
-                boss.y - boss.height / 2 < player.y + player.height / 2 &&
-                boss.x + boss.width / 2 > player.x - player.width / 2 &&
-                boss.x - boss.width / 2 < player.x + player.width / 2) {
-                
-                if (!shield) {
-                    health -= 50; // Big damage from boss collision
-                }
-            }
-        }
         
         function spawnEnemy() {
             const types = ['basic', 'fast', 'tank', 'shooter'];
@@ -971,7 +1012,7 @@
                 case 'basic':
                     enemy.width = 30;
                     enemy.height = 30;
-                    enemy.speed = 0.2 + level * 0.05; // Super slow
+                    enemy.speed = 0.3 * Math.pow(1.1, level); // 10% faster each level
                     enemy.health = 1;
                     enemy.color = '#ff0000';
                     enemy.points = 10;
@@ -979,7 +1020,7 @@
                 case 'fast':
                     enemy.width = 25;
                     enemy.height = 25;
-                    enemy.speed = 0.35 + level * 0.07; // Slower
+                    enemy.speed = 0.5 * Math.pow(1.1, level); // 10% faster each level
                     enemy.health = 1;
                     enemy.color = '#ff9900';
                     enemy.points = 20;
@@ -987,7 +1028,7 @@
                 case 'tank':
                     enemy.width = 45;
                     enemy.height = 45;
-                    enemy.speed = 0.15 + level * 0.03; // Very very slow
+                    enemy.speed = 0.2 * Math.pow(1.1, level); // 10% faster each level
                     enemy.health = 3;
                     enemy.color = '#9900ff';
                     enemy.points = 50;
@@ -995,7 +1036,7 @@
                 case 'shooter':
                     enemy.width = 35;
                     enemy.height = 35;
-                    enemy.speed = 0.25 + level * 0.05; // Super slow
+                    enemy.speed = 0.4 * Math.pow(1.1, level); // 10% faster each level
                     enemy.health = 2;
                     enemy.color = '#00ff00';
                     enemy.points = 30;
@@ -1011,7 +1052,7 @@
         
         function spawnPowerup(x, y) {
             if (Math.random() < 0.3) {
-                const types = ['rapidfire', 'shield', 'health', 'energy'];
+                const types = ['rapidfire', 'shield', 'health', 'bullets'];
                 powerups.push({
                     x: x,
                     y: y,
@@ -1027,28 +1068,59 @@
         
         function updatePlayer() {
             player.dx = 0;
+            player.dy = 0;
             
-            // Desktop keyboard controls
-            if (keys['ArrowLeft'] || keys['a']) {
-                player.dx = -player.speed;
+            // Touch control - follow finger in all directions
+            if (touchActive) {
+                const diffX = touchX - player.x;
+                const diffY = touchY - player.y;
+                
+                // Smooth movement towards touch position (X axis)
+                if (Math.abs(diffX) > 5) {
+                    player.dx = Math.sign(diffX) * player.speed;
+                } else {
+                    player.x = touchX;
+                }
+                
+                // Smooth movement towards touch position (Y axis)
+                if (Math.abs(diffY) > 5) {
+                    player.dy = Math.sign(diffY) * player.speed;
+                } else {
+                    player.y = touchY;
+                }
             }
-            if (keys['ArrowRight'] || keys['d']) {
-                player.dx = player.speed;
-            }
-            
-            // Mobile touch controls
-            if (moveLeft) {
-                player.dx = -player.speed;
-            }
-            if (moveRight) {
-                player.dx = player.speed;
+            // Desktop keyboard controls (WASD or arrows)
+            else {
+                if (keys['ArrowLeft'] || keys['a']) {
+                    player.dx = -player.speed;
+                }
+                if (keys['ArrowRight'] || keys['d']) {
+                    player.dx = player.speed;
+                }
+                if (keys['ArrowUp'] || keys['w']) {
+                    player.dy = -player.speed;
+                }
+                if (keys['ArrowDown'] || keys['s']) {
+                    player.dy = player.speed;
+                }
             }
             
             player.x += player.dx;
+            player.y += player.dy;
             
             // Boundaries
-            if (player.x < player.width / 2) player.x = player.width / 2;
-            if (player.x > canvas.width - player.width / 2) player.x = canvas.width - player.width / 2;
+            // Horizontal: can reach full left and right
+            const minX = player.width / 2;
+            const maxX = canvas.width - player.width / 2;
+            
+            // Vertical: can't go above middle of screen
+            const minY = canvas.height / 2; // Can't go above middle
+            const maxY = canvas.height - player.height / 2 - 10; // Bottom boundary
+            
+            if (player.x < minX) player.x = minX;
+            if (player.x > maxX) player.x = maxX;
+            if (player.y < minY) player.y = minY;
+            if (player.y > maxY) player.y = maxY;
             
             // Add trail
             player.trail.push({ x: player.x, y: player.y, life: 10 });
@@ -1146,7 +1218,7 @@
                         
                         // Drop powerup every hit (max 4 total)
                         if (boss.powerupsDropped < 4) {
-                            const types = ['rapidfire', 'shield', 'health', 'energy'];
+                            const types = ['rapidfire', 'shield', 'health', 'bullets'];
                             const type = types[boss.powerupsDropped]; // Drop in order
                             powerups.push({
                                 x: boss.x + (Math.random() - 0.5) * 40,
@@ -1196,23 +1268,13 @@
                             // Reward player
                             health = 100;
                             energy = 100;
+                            coins += 100; // Big coin reward for defeating boss
                             
                             bossActive = false;
                             boss = null;
                             
-                            // Show victory message
-                            const container = document.getElementById('powerupContainer');
-                            const victoryBadge = document.createElement('div');
-                            victoryBadge.className = 'powerup-badge';
-                            victoryBadge.style.borderColor = '#ffff00';
-                            victoryBadge.style.color = '#ffff00';
-                            victoryBadge.style.fontSize = '18px';
-                            victoryBadge.textContent = '🎊 هزمت البوس! +1000 نقطة 🎊';
-                            container.appendChild(victoryBadge);
-                            
-                            setTimeout(() => {
-                                victoryBadge.remove();
-                            }, 4000);
+                            // Show boss rewards screen
+                            showBossRewards();
                         }
                     }
                 }
@@ -1261,6 +1323,7 @@
                         
                         if (enemy.health <= 0) {
                             score += enemy.points;
+                            coins += Math.floor(enemy.points / 5); // Earn coins (1 coin per 5 points)
                             enemyKills++; // Increment kill count
                             
                             // Check for level up
@@ -1357,8 +1420,25 @@
         }
         
         function activatePowerup(type) {
-            const container = document.getElementById('powerupContainer');
+            // Auto-activate mode
+            if (autoActivatePowerups) {
+                applyPowerupEffect(type);
+                return;
+            }
             
+            // Manual mode - store with stacking
+            const existingIndex = storedPowerups.findIndex(p => p.type === type);
+            if (existingIndex >= 0) {
+                // Stack the powerup (increase count and double duration)
+                storedPowerups[existingIndex].count++;
+            } else if (storedPowerups.length < maxStoredPowerups) {
+                // Add new powerup
+                storedPowerups.push({ type: type, count: 1 });
+            }
+            updateStoredPowerupsDisplay();
+        }
+        
+        function applyPowerupEffect(type) {
             switch(type) {
                 case 'rapidfire':
                     rapidFire = true;
@@ -1373,10 +1453,111 @@
                 case 'health':
                     health = Math.min(100, health + 30);
                     break;
-                case 'energy':
-                    energy = 100;
+                case 'bullets':
+                    // Unlimited bullets for 10 seconds
+                    maxBulletsInBurst = 999;
+                    setTimeout(() => {
+                        maxBulletsInBurst = 3;
+                    }, 10000);
                     break;
             }
+        }
+        
+        function usePowerup(index) {
+            if (index >= storedPowerups.length) return;
+            
+            const powerup = storedPowerups[index];
+            const count = powerup.count;
+            
+            // Apply effect with duration multiplied by count
+            switch(powerup.type) {
+                case 'rapidfire':
+                    rapidFire = true;
+                    rapidFireTimer = 600 * count; // 10 seconds × count
+                    updatePowerupDisplay();
+                    break;
+                case 'shield':
+                    shield = true;
+                    shieldTimer = 480 * count; // 8 seconds × count
+                    updatePowerupDisplay();
+                    break;
+                case 'health':
+                    health = Math.min(100, health + (30 * count));
+                    break;
+                case 'bullets':
+                    maxBulletsInBurst = 999;
+                    setTimeout(() => {
+                        maxBulletsInBurst = 3;
+                    }, 10000 * count);
+                    break;
+            }
+            
+            storedPowerups.splice(index, 1);
+            updateStoredPowerupsDisplay();
+        }
+        
+        function useAllPowerups() {
+            while (storedPowerups.length > 0) {
+                usePowerup(0);
+            }
+        }
+        
+        function updateStoredPowerupsDisplay() {
+            const container = document.getElementById('storedPowerupsContainer');
+            container.innerHTML = '';
+            
+            storedPowerups.forEach((powerup, index) => {
+                const badge = document.createElement('div');
+                badge.className = 'stored-powerup-badge';
+                badge.onclick = () => usePowerup(index);
+                badge.style.position = 'relative';
+                
+                let icon, color;
+                switch(powerup.type) {
+                    case 'rapidfire':
+                        icon = '⚡';
+                        color = '#ff00ff';
+                        break;
+                    case 'shield':
+                        icon = '🛡️';
+                        color = '#00ffff';
+                        break;
+                    case 'health':
+                        icon = '❤️';
+                        color = '#ff0000';
+                        break;
+                    case 'bullets':
+                        icon = '🔫';
+                        color = '#ffaa00';
+                        break;
+                }
+                
+                badge.style.borderColor = color;
+                badge.style.color = color;
+                badge.textContent = icon;
+                
+                // Show count if stacked
+                if (powerup.count > 1) {
+                    const countBadge = document.createElement('span');
+                    countBadge.style.position = 'absolute';
+                    countBadge.style.top = '-5px';
+                    countBadge.style.right = '-5px';
+                    countBadge.style.background = color;
+                    countBadge.style.color = '#000';
+                    countBadge.style.borderRadius = '50%';
+                    countBadge.style.width = '18px';
+                    countBadge.style.height = '18px';
+                    countBadge.style.display = 'flex';
+                    countBadge.style.alignItems = 'center';
+                    countBadge.style.justifyContent = 'center';
+                    countBadge.style.fontSize = '10px';
+                    countBadge.style.fontWeight = 'bold';
+                    countBadge.textContent = 'x' + powerup.count;
+                    badge.appendChild(countBadge);
+                }
+                
+                container.appendChild(badge);
+            });
         }
         
         function updatePowerupDisplay() {
@@ -1465,6 +1646,9 @@
             
             ctx.restore();
             
+            // Draw allies
+            drawAllies();
+            
             // Bullets
             bullets.forEach(bullet => {
                 ctx.fillStyle = bullet.color;
@@ -1547,7 +1731,7 @@
                     case 'rapidfire': color = '#ff00ff'; break;
                     case 'shield': color = '#00ffff'; break;
                     case 'health': color = '#ff0000'; break;
-                    case 'energy': color = '#ffff00'; break;
+                    case 'bullets': color = '#ffaa00'; break;
                 }
                 
                 // Draw fading circles
@@ -1593,14 +1777,15 @@
         
         function updateUI() {
             document.getElementById('score').textContent = score;
-            const killsNeeded = level * 10;
+            document.getElementById('coins').textContent = coins;
+            const killsNeeded = 10; // Always 10 kills
             document.getElementById('level').textContent = level + ' (' + enemyKills + '/' + killsNeeded + ')';
-            document.getElementById('health').textContent = Math.max(0, Math.floor(health)) + '% | الأرواح: ' + livesRemaining;
+            document.getElementById('health').textContent = Math.max(0, Math.floor(health)) + '% | المحاولات: ' + livesRemaining;
             document.getElementById('energy').textContent = Math.floor(energy);
         }
         
         function checkLevelUp() {
-            const killsNeeded = level * 10; // Level 1 = 10 kills, Level 2 = 20 kills, etc.
+            const killsNeeded = 10; // Always 10 kills per level
             if (enemyKills >= killsNeeded) {
                 level++;
                 enemyKills = 0; // Reset kills for next level
@@ -1677,6 +1862,7 @@
             }
             
             updatePlayer();
+            updateAllies(); // Update allies
             updateBullets();
             if (bossActive) {
                 updateBoss();
@@ -1693,7 +1879,7 @@
             
             // Spawn enemies (only if not in level transition and no boss)
             if (!levelTransition && !bossActive) {
-                const spawnRate = 0.004 + level * 0.002; // Much lower spawn rate
+                const spawnRate = 0.002 + level * 0.001; // Much fewer enemies
                 if (Math.random() < spawnRate) {
                     spawnEnemy();
                 }
@@ -1705,6 +1891,119 @@
             }
             
             requestAnimationFrame(gameLoop);
+        }
+        
+        function showBossRewards() {
+            gameRunning = false;
+            
+            // Generate 3 random rewards
+            const rewardTypes = ['ally', 'powerup', 'powerup'];
+            const rewards = [];
+            
+            for (let i = 0; i < 3; i++) {
+                const type = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
+                if (type === 'ally' && allies.length < maxAllies) {
+                    rewards.push({
+                        type: 'ally',
+                        icon: '🚀',
+                        text: 'مقاتل إضافي',
+                        color: '#00ffff'
+                    });
+                } else {
+                    const powerupTypes = ['rapidfire', 'shield', 'health', 'bullets'];
+                    const pType = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+                    let icon, text, color;
+                    switch(pType) {
+                        case 'rapidfire': icon = '⚡'; text = 'إطلاق سريع'; color = '#ff00ff'; break;
+                        case 'shield': icon = '🛡️'; text = 'درع'; color = '#00ffff'; break;
+                        case 'health': icon = '❤️'; text = 'صحة +50'; color = '#ff0000'; break;
+                        case 'bullets': icon = '🔫'; text = 'طلقات غير محدودة'; color = '#ffaa00'; break;
+                    }
+                    rewards.push({type: 'powerup', powerupType: pType, icon, text, color});
+                }
+            }
+            
+            const container = document.getElementById('rewardOptions');
+            container.innerHTML = '';
+            
+            rewards.forEach((reward, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'control-btn';
+                btn.style.width = '250px';
+                btn.style.fontSize = '18px';
+                btn.style.background = `linear-gradient(135deg, ${reward.color}, #000)`;
+                btn.textContent = `${reward.icon} ${reward.text}`;
+                btn.onclick = () => selectReward(reward);
+                container.appendChild(btn);
+            });
+            
+            document.getElementById('bossRewardsScreen').style.display = 'block';
+        }
+        
+        function selectReward(reward) {
+            if (reward.type === 'ally') {
+                addAlly();
+            } else {
+                activatePowerup(reward.powerupType);
+            }
+            document.getElementById('bossRewardsScreen').style.display = 'none';
+            gameRunning = true;
+        }
+        
+        function addAlly() {
+            if (allies.length >= maxAllies) return;
+            
+            const ally = {
+                x: player.x + (allies.length - 1.5) * 60,
+                y: player.y + 40,
+                width: 30,
+                height: 30,
+                color: ['#ff00ff', '#00ff00', '#ffaa00', '#00ffff'][allies.length],
+                shootTimer: 0
+            };
+            allies.push(ally);
+        }
+        
+        function updateAllies() {
+            allies.forEach((ally, index) => {
+                // Follow player with slight offset
+                const targetX = player.x + (index - (allies.length - 1) / 2) * 50;
+                const targetY = player.y + 50;
+                
+                ally.x += (targetX - ally.x) * 0.1;
+                ally.y += (targetY - ally.y) * 0.1;
+                
+                // Allies shoot automatically
+                ally.shootTimer++;
+                if (ally.shootTimer > 30) {
+                    bullets.push({
+                        x: ally.x,
+                        y: ally.y,
+                        width: 4,
+                        height: 12,
+                        speed: 10,
+                        color: ally.color
+                    });
+                    ally.shootTimer = 0;
+                }
+            });
+        }
+        
+        function drawAllies() {
+            allies.forEach(ally => {
+                ctx.save();
+                ctx.translate(ally.x, ally.y);
+                ctx.fillStyle = ally.color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = ally.color;
+                ctx.beginPath();
+                ctx.moveTo(0, -ally.height / 2);
+                ctx.lineTo(-ally.width / 2, ally.height / 2);
+                ctx.lineTo(ally.width / 2, ally.height / 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
         }
         
         function gameOver() {
@@ -1754,7 +2053,7 @@
                     livesBadge.className = 'powerup-badge';
                     livesBadge.style.borderColor = '#ff0000';
                     livesBadge.style.color = '#ff0000';
-                    livesBadge.textContent = '💔 الأرواح: ' + livesRemaining;
+                    livesBadge.textContent = '💔 المحاولات المتبقية: ' + livesRemaining;
                     container.appendChild(livesBadge);
                     
                     setTimeout(() => {
@@ -1768,6 +2067,7 @@
             gameRunning = true;
             gamePaused = false;
             score = 0;
+            coins = 0;
             level = 1;
             health = 100;
             energy = 100;
@@ -1776,11 +2076,13 @@
             levelTransition = false;
             bossActive = false;
             boss = null;
+            allies = []; // Reset allies
             
             resizeCanvas();
             player.x = canvas.width / 2;
             player.y = canvas.height - 80;
             player.dx = 0;
+            player.dy = 0;
             
             bullets = [];
             enemies = [];
@@ -1788,17 +2090,18 @@
             powerups = [];
             rapidFire = false;
             shield = false;
-            moveLeft = false;
-            moveRight = false;
             shooting = false;
+            storedPowerups = [];
             
             stopShooting();
             
             document.getElementById('gameOver').style.display = 'none';
             document.getElementById('startScreen').style.display = 'none';
             document.getElementById('bonusScreen').style.display = 'none';
+            document.getElementById('bossRewardsScreen').style.display = 'none';
             document.getElementById('powerupIndicator').style.display = 'none';
             document.getElementById('powerupContainer').innerHTML = '';
+            document.getElementById('storedPowerupsContainer').innerHTML = '';
             document.getElementById('pauseBtn').textContent = '⏸ إيقاف';
             gameLoop();
         }
